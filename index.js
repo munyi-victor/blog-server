@@ -139,22 +139,21 @@ app.post("/create-blog", (req, res) => {
     if (error) {
       res.json({ success: false, message: "Couldn't publish your blog" });
     } else {
-      res.send(result);
-      res.json({
-        success: true,
-        message: "Your blog was published successfully",
-      });
+      res.send(result); 
+      // res.json({
+      //   success: true,
+      //   message: "Your blog was published successfully",
+      // });
     }
   });
 });
 
 app.get('/get-blogs', async (req, res) => {
-  db.query('SELECT * FROM blogs', (error) => {
-    if (error, result) {
+  db.query('SELECT * FROM blogs', (error, result) => {
+    if (error) {
       res.json({ succes: false, message: "Error fetching blogs blogs" });
     } else {
       res.send(result);
-      res.json({ succes: true, message: "" });
     }
   });
 } )
