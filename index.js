@@ -52,23 +52,15 @@ app.post("/register", (req, res) => {
   })
 })
 
-// app.post("/login", (req, res) => {
-//   const { username, password } = req.body;
-
-//   const logSql = "SELECT * FROM users WHERE username = ? AND password = ?";
-
-//   db.query(logSql, [username, password], (err, result) => {
-//     if (err) {
-//       req.setEncoding({err: err})
-//     } else {
-//       if (result.length > 0) {
-//         res.send(result);
-//       } else {
-//         res.send({ message: "Wrong username or password" });
-//       }
-//     }
-//   })
-// })
+app.get("/getUsers", (req, res) => {
+  db.query("SELECT * FROM users", (error, result) => {
+    if (error) {
+      console.error(error);
+    } else {
+      res.send(result.data)
+    }
+  })
+})
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
