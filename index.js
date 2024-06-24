@@ -57,7 +57,7 @@ app.get("/getUsers", (req, res) => {
     if (error) {
       console.error(error);
     } else {
-      res.send(result.data)
+      res.send(result)
     }
   })
 })
@@ -71,11 +71,6 @@ app.post('/login', async (req, res) => {
     const [users] = await db.promise().query(logSql, [username, password]);
 
     if (users.length > 0) {
-      user = users[0];
-
-      const [userProfile] = await db.promise().query('SELECT * FROM user_profile WHERE user_id = ?', [user.id]);
-
-      req.session.user = { ...user, profile: userProfile[0] };
       res.json({ success: true, message: "Login successful" });
     } else {
       res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -91,35 +86,35 @@ app.post("/logout", (req, res) => {
   res.json({ success: true, message: 'Logout successful' });
 });
 
-app.get("/checkAuth", (req, res) => {
-  const isAuthenticated = req.session.user ? true : false;
-  res.json({ isAuthenticated });
-})
+// app.get("/checkAuth", (req, res) => {
+//   const isAuthenticated = req.session.user ? true : false;
+//   res.json({ isAuthenticated });
+// })
 
-app.get("/userData", async (req, res) => {
-  try {
-    if (!req.session.user) {
-      return res.status(401).json({ success: false, message: 'User not authenticated' });
-    }
+// app.get("/userData", async (req, res) => {
+//   try {
+//     if (!req.session.user) {
+//       return res.status(401).json({ success: false, message: 'User not authenticated' });
+//     }
 
-    const userId = req.session.user.id;
+//     const userId = req.session.user.id;
 
-    const [userProfile] = await db.promise().query("SELECT * FROM user_profie WHERE user_id =?", [userId]);
+//     const [userProfile] = await db.promise().query("SELECT * FROM user_profie WHERE user_id =?", [userId]);
 
-    if (userProfile.length > 0) {
-      const userData = {
-        ...req.session.user, profile: userProfile[0],
-      };
+//     if (userProfile.length > 0) {
+//       const userData = {
+//         ...req.session.user, profile: userProfile[0],
+//       };
 
-      return res.json(userData);
-    } else {
-      return res.status(404).json({ success: false, message: 'User profile not found.' });
-    }
-  } catch (error) {
-    console.error("Error fetching user profile data: ", error.message);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
+//       return res.json(userData);
+//     } else {
+//       return res.status(404).json({ success: false, message: 'User profile not found.' });
+//     }
+//   } catch (error) {
+//     console.error("Error fetching user profile data: ", error.message);
+//     return res.status(500).json({ success: false, message: 'Internal server error' });
+//   }
+// });
 
 // create blog route
 app.post("/create-blog", (req, res) => {
