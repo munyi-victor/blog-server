@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const session = require("express-session");
 const bodyParser = require("body-parser");
-const MYSQLStore = require("express-mysql-session")(session);
 
 const db = require("./db");
 
@@ -10,31 +8,6 @@ app = express();
 
 app.use(cors());
 app.use(express.json());
-
-const sessionStore = new MYSQLStore({
-  expiration: 1800000,
-  createDatabaseTable: true,
-  schema: {
-    tableName: "sessions",
-    columnNames: {
-      session_id: 'session_id',
-      expires: 'expires',
-      data: 'data'
-    }
-  }
-}, db.promise());
-
-app.use(
-  session({
-    secret: process.env.SESSIONS_SECRET_KEY,
-    resave: false,
-    saveUninitialized: true,
-    store: sessionStore,
-    cookie: {
-      maxAge: 60 * 60 * 1000,
-    },
-  })
-);
 
 app.use(bodyParser.json());
 
@@ -52,12 +25,18 @@ app.post("/register", (req, res) => {
   })
 })
 
-app.get("/getUsers", (req, res) => {
-  db.query("SELECT * FROM users", (error, result) => {
+app.get(`/getUsers/:id`, (req, res) => {
+  const userId = req.params.id;
+
+  db.query("SELECT * FROM users WHERE id = ?",  userId, (error, results) => {
     if (error) {
       console.error(error);
+    } 
+
+    if (results.length > 0) {
+      res.json(results[0]);
     } else {
-      res.send(result)
+      res.status(404).send("User not found!");
     }
   })
 })
@@ -71,7 +50,8 @@ app.post('/login', async (req, res) => {
     const [users] = await db.promise().query(logSql, [username, password]);
 
     if (users.length > 0) {
-      res.json({ success: true, message: "Login successful" });
+      const loggedInUser = users[0];
+      res.json({ loggedInUser: loggedInUser, success: true, message: "Login successful" });
     } else {
       res.status(401).json({ success: false, message: "Invalid credentials" });
     }
@@ -82,39 +62,8 @@ app.post('/login', async (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session.destroy();
   res.json({ success: true, message: 'Logout successful' });
 });
-
-// app.get("/checkAuth", (req, res) => {
-//   const isAuthenticated = req.session.user ? true : false;
-//   res.json({ isAuthenticated });
-// })
-
-// app.get("/userData", async (req, res) => {
-//   try {
-//     if (!req.session.user) {
-//       return res.status(401).json({ success: false, message: 'User not authenticated' });
-//     }
-
-//     const userId = req.session.user.id;
-
-//     const [userProfile] = await db.promise().query("SELECT * FROM user_profie WHERE user_id =?", [userId]);
-
-//     if (userProfile.length > 0) {
-//       const userData = {
-//         ...req.session.user, profile: userProfile[0],
-//       };
-
-//       return res.json(userData);
-//     } else {
-//       return res.status(404).json({ success: false, message: 'User profile not found.' });
-//     }
-//   } catch (error) {
-//     console.error("Error fetching user profile data: ", error.message);
-//     return res.status(500).json({ success: false, message: 'Internal server error' });
-//   }
-// });
 
 // create blog route
 app.post("/create-blog", (req, res) => {
@@ -127,10 +76,6 @@ app.post("/create-blog", (req, res) => {
       res.json({ success: false, message: "Couldn't publish your blog" });
     } else {
       res.send(result); 
-      // res.json({
-      //   success: true,
-      //   message: "Your blog was published successfully",
-      // });
     }
   });
 });
