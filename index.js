@@ -83,7 +83,7 @@ app.post("/create-blog", (req, res) => {
 app.get('/get-blogs', async (req, res) => {
   db.query('SELECT * FROM blogs', (error, result) => {
     if (error) {
-      res.json({ succes: false, message: "Error fetching blogs blogs" });
+      res.json({ succes: false, message: "Error fetching blogs" });
     } else {
       res.send(result);
     }
