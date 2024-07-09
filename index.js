@@ -6,7 +6,12 @@ const db = require("./db");
 
 app = express();
 
-app.use(cors());
+const cors_option = {
+  origin:["http://localhost:3000","https://newsanchor.vercel.app"],
+  methods: ["GET", "POST", "DELETE", "UPDATE", "PATCH", "PUT"]
+}
+
+app.use(cors(cors_option));
 app.use(express.json());
 
 app.use(bodyParser.json());
