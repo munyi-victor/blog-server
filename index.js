@@ -80,7 +80,7 @@ app.post("/create-blog", (req, res) => {
     if (error) {
       res.json({ success: false, message: "Couldn't publish your blog" });
     } else {
-      res.json({ success: true, message: "Your blog has been published successfully!" }); 
+      res.json({ success: true, message: "Your blog was published successfully!", result }); 
     }
   });
 });
